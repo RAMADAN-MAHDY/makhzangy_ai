@@ -4,8 +4,10 @@ import { env } from './config/env.js';
 import { connectDB } from './config/db.js';
 import { logger } from './utils/logger.js';
 
+const dbConnectionPromise = connectDB();
+
 async function start() {
-  await connectDB();
+  await dbConnectionPromise;
 
   const server = app.listen(env.PORT, () => {
     logger.info(`🤖 Makhzangy AI Backend running on port ${env.PORT} [${env.NODE_ENV}]`);
@@ -23,5 +25,7 @@ const executedFile = process.argv[1];
 if (executedFile === currentFile) {
   start();
 }
+
+await dbConnectionPromise;
 
 export default app;
