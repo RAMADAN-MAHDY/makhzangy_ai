@@ -44,7 +44,8 @@ Content-Type: application/json
 Authorization: Bearer {{login.response.body.data.token}}
 
 {
-  "message": "طيب هاتلي كل المبيعات اللي موجوده عندنا    "
+    "conversationId": "{{chat1.response.body.data.conversationId}}",
+   "message":" ما هو ده اللي انا قصدي عليه "
 }
 
 
@@ -94,7 +95,16 @@ Authorization: Bearer {{login.response.body.data.token}}
 
 
 ### -------------------------------------------------------------------------
-### 8) اختبار: طلب بدون توكن (المفروض يرجع 401)
+### 8) اختبار استهلاك التوكنز لكل tenant
+### استخدم from/to إذا عايز فترة معينة
+### -------------------------------------------------------------------------
+GET {{aiBackend}}/api/ai/usage?from=2026-08-01&to=2026-08-31
+Authorization: Bearer {{login.response.body.data.token}}
+
+
+
+### -------------------------------------------------------------------------
+### 9) اختبار: طلب بدون توكن (المفروض يرجع 401)
 ### -------------------------------------------------------------------------
 POST {{aiBackend}}/api/ai/chat
 Content-Type: application/json

@@ -1,5 +1,6 @@
 import { Message } from '../models/Message.js';
 import { getActiveSystemPrompt } from '../registry/promptRegistry.js';
+import { getCurrentDateInfo } from '../utils/datePeriods.js';
 
 const LAST_N_MESSAGES = 12;
 
@@ -11,6 +12,25 @@ const LAST_N_MESSAGES = 12;
  */
 export async function buildContext(conversation) {
   const { text: systemPromptBase } = getActiveSystemPrompt();
+  const { currentDate, timeZone } = getCurrentDateInfo();
+
+  const dynamicPrompt = `
+معلومات النظام الحالية:
+- التاريخ الحالي: ${currentDate}
+- المنطقة الزمنية: ${timeZone}
+
+اعتمد دائماً على التاريخ الحالي عند تفسير:
+اليوم - أمس - بكرة - هذا الأسبوع - هذا الشهر - هذه السنة.
+
+المحادثة السابقة لهذا الحوار متاحة لك الآن كجزء من السياق. استخدم هذا السياق عند الإجابة على أي سؤال عن الكلام اللي اتقال قبل كده.
+  `.trim();
+
+  const promptParts = [systemPromptBase, dynamicPrompt];
+  if (conversation.summary) {
+    promptParts.push(`ملخص المحادثة السابقة (للسياق فقط):\n${conversation.summary}`);
+  }
+
+  const systemPrompt = promptParts.join('\n\n');
 
   const recentMessages = await Message.find({ conversationId: conversation._id })
     .sort({ createdAt: -1 })
@@ -18,10 +38,6 @@ export async function buildContext(conversation) {
     .lean();
 
   recentMessages.reverse(); // chronological order
-
-  const systemPrompt = conversation.summary
-    ? `${systemPromptBase}\n\nملخص المحادثة السابقة (للسياق فقط):\n${conversation.summary}`
-    : systemPromptBase;
 
   const history = recentMessages
     .filter((m) => m.role === 'user' || m.role === 'assistant')
