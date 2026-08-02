@@ -17,7 +17,7 @@
 
 ### مثال
 ```js
-fetch('http://localhost:5100/api/health')
+fetch('https://makhzangy-ai.vercel.app/api/health')
   .then((res) => res.json())
   .then(console.log)
   .catch(console.error);
@@ -39,7 +39,7 @@ fetch('http://localhost:5100/api/health')
 
 ### مثال طلب
 ```js
-const response = await fetch('http://localhost:5100/api/ai/chat', {
+const response = await fetch('https://makhzangy-ai.vercel.app/api/ai/chat', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ console.log(data);
 ### مثال طلب
 ```js
 const conversationId = '6a6f4669d502c6495fe9e4fc';
-const response = await fetch(`http://localhost:5100/api/ai/conversations/${conversationId}/messages`, {
+const response = await fetch(`https://makhzangy-ai.vercel.app/api/ai/conversations/${conversationId}/messages`, {
   headers: {
     Authorization: `Bearer ${token}`,
   },
@@ -125,7 +125,7 @@ console.log(data);
 
 ### مثال طلب
 ```js
-const response = await fetch('http://localhost:5100/api/ai/usage?from=2026-08-01&to=2026-08-31', {
+const response = await fetch('/api/ai/usage?from=2026-08-01&to=2026-08-31', {
   headers: {
     Authorization: `Bearer ${token}`,
   },
