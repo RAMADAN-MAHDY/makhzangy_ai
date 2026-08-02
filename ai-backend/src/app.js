@@ -13,6 +13,8 @@ import { notFoundHandler, errorMiddleware } from './middleware/errorMiddleware.j
 
 export const app = express();
 
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors({ origin: env.FRONTEND_ORIGIN, credentials: true }));
 app.use(hpp());
