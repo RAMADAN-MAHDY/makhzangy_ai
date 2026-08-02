@@ -29,6 +29,7 @@ const chatLimiter = rateLimit({
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'استنى شوية قبل ما تبعت رسايل تانية' } },
 });
 
+app.get('/', (_req, res) => res.json({ success: true, service: 'makhzangy-ai-backend', status: 'ok' }));
 app.get('/api/health', (_req, res) => res.json({ success: true, service: 'makhzangy-ai-backend', status: 'ok' }));
 
 app.use('/api/ai', chatLimiter, chatRoutes);
