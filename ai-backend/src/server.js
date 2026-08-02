@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'url';
 import { app } from './app.js';
 import { env } from './config/env.js';
 import { connectDB } from './config/db.js';
@@ -16,4 +17,11 @@ async function start() {
   });
 }
 
-start();
+const currentFile = fileURLToPath(import.meta.url);
+const executedFile = process.argv[1];
+
+if (executedFile === currentFile) {
+  start();
+}
+
+export default app;
