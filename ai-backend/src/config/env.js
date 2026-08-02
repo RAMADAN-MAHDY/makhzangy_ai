@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(5100),
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
 
   MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
 
