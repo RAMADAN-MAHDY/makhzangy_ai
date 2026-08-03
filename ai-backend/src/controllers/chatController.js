@@ -22,10 +22,12 @@ export async function sendMessage(req, res, next) {
 
     const conversation = await getOrCreateConversation({ conversationId, userId, tenantId });
 
+    const mainBackendClient = createMainBackendClient(userJwt);
+    await ensureAiSubscriptionQuota(mainBackendClient, userId, tenantId);
+
     await Message.create({ conversationId: conversation._id, role: 'user', content: message });
 
     const { systemPrompt, history } = await buildContext(conversation);
-    const mainBackendClient = createMainBackendClient(userJwt);
 
     const { text, toolCalls, usage } = await runGeminiTurn({
       systemPrompt,
@@ -97,4 +99,30 @@ async function getOrCreateConversation({ conversationId, userId, tenantId }) {
   }
 
   return Conversation.create({ userId, tenantId });
+}
+
+async function getCurrentAiUsage(userId, tenantId) {
+  const conversationIds = await Conversation.find({ userId, tenantId }).distinct('_id');
+  if (!conversationIds.length) return 0;
+
+  const usage = await Message.aggregate([
+    { $match: { conversationId: { $in: conversationIds }, role: 'assistant', 'tokenUsage.totalTokens': { $exists: true } } },
+    { $group: { _id: null, totalTokens: { $sum: '$tokenUsage.totalTokens' } } },
+  ]);
+
+  return usage[0]?.totalTokens || 0;
+}
+
+async function ensureAiSubscriptionQuota(mainBackendClient, userId, tenantId) {
+  const response = await mainBackendClient.get('/api/subscription/status');
+  const limit = response.data?.data?.limits?.maxAiTokensPerCycle ?? 50000;
+  const currentUsage = await getCurrentAiUsage(userId, tenantId);
+
+  if (currentUsage >= limit) {
+    throw new AppError(
+      'لقد وصلت إلى حد توكنات AI في خطتك الحالية. يرجى ترقية الاشتراك للاستمرار.',
+      402,
+      'AI_TOKEN_LIMIT_REACHED'
+    );
+  }
 }

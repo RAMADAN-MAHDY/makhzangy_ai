@@ -7,6 +7,15 @@ const client = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 
 const MAX_TOOL_HOPS = 4; // hard cap so a confused model can't loop forever
 
+function mergeUsage(base, next) {
+  if (!next) return base;
+  return {
+    promptTokenCount: (base.promptTokenCount || 0) + (next.promptTokenCount || 0),
+    candidatesTokenCount: (base.candidatesTokenCount || 0) + (next.candidatesTokenCount || 0),
+    totalTokenCount: (base.totalTokenCount || 0) + (next.totalTokenCount || 0),
+  };
+}
+
 /**
  * Runs one user turn through Gemini with Function Calling enabled.
  * If the model asks for a tool, we execute it via the Tool Registry
@@ -23,7 +32,7 @@ const MAX_TOOL_HOPS = 4; // hard cap so a confused model can't loop forever
 export async function runGeminiTurn({ systemPrompt, history, userMessage, toolCtx }) {
   const contents = [...history, { role: 'user', parts: [{ text: userMessage }] }];
   const toolCallLog = [];
-  let usage = {};
+  let usage = { promptTokenCount: 0, candidatesTokenCount: 0, totalTokenCount: 0 };
 
   for (let hop = 0; hop < MAX_TOOL_HOPS; hop++) {
     const response = await client.models.generateContent({
@@ -35,7 +44,7 @@ export async function runGeminiTurn({ systemPrompt, history, userMessage, toolCt
       },
     });
 
-    usage = response.usageMetadata || usage;
+    usage = mergeUsage(usage, response.usageMetadata);
 
     const candidate = response.candidates?.[0];
     const parts = candidate?.content?.parts || [];
