@@ -15,8 +15,14 @@ export const app = express();
 
 app.set('trust proxy', 1);
 
+// هندلة لينكات متعدده لل origin cors 
+const allowedOrigins = env.FRONTEND_ORIGIN.split(',').map(origin => origin.trim());
+// طريقة التعامل مع CORS بحيث يسمح لل origins المسموح بها فقط
+// 1 - اضف اللينك اللي انت عايزه في env.FRONTEND_ORIGIN
+// 2- شكل اللينكات يكون بالشكل ده: http://localhost:3000, https://example.com, https://subdomain.example.com
+
 app.use(helmet());
-app.use(cors({ origin: env.FRONTEND_ORIGIN, credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(hpp());
 app.use(compression());
 app.use(express.json({ limit: '1mb' }));
