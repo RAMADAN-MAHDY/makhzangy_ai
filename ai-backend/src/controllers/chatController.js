@@ -114,7 +114,7 @@ async function getCurrentAiUsage(userId, tenantId) {
 }
 
 async function ensureAiSubscriptionQuota(mainBackendClient, userId, tenantId) {
-  const response = await mainBackendClient.get('/api/subscription/status');
+  const response = await mainBackendClient.get('/subscription/status');
   const limit = response.data?.data?.limits?.maxAiTokensPerCycle ?? 50000;
   const currentUsage = await getCurrentAiUsage(userId, tenantId);
 
