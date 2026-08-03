@@ -13,8 +13,10 @@ import { AppError } from './AppError.js';
  *    logged-in user is already allowed to do via REST API + JWT.
  */
 export function createMainBackendClient(userJwt) {
+  const baseURL = env.MAIN_BACKEND_BASE_URL.replace(/\/+$/, '').replace(/\/api$/, '');
+
   const client = axios.create({
-    baseURL: env.MAIN_BACKEND_BASE_URL,
+    baseURL,
     timeout: 15_000,
     headers: {
       Authorization: `Bearer ${userJwt}`,

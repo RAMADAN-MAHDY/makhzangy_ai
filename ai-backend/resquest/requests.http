@@ -9,7 +9,7 @@
 ### 5) التوكن بيتاخد تلقائيًا من رد اللوجين ويتحط في طلبات الشات (متغير {{login.response...}}).
 ### =========================================================================
 
-@aiBackend = http://localhost:5100
+@aiBackend = https://makhzangy-ai.vercel.app
 @mainBackend = https://warehouse-management-system-for-an.vercel.app/api
 
 @token = {{login.response.body.data.token}}
@@ -57,7 +57,6 @@ Content-Type: application/json
 Authorization: Bearer {{login.response.body.data.token}}
 
 {
-  "conversationId": "{{chat1.response.body.data.conversationId}}",
   "message": "طيب وإيه المنتجات اللي قربت تخلص؟"
 }
 
