@@ -4,7 +4,7 @@ import { AppError } from '../utils/AppError.js';
 export async function superadminMiddleware(req, res, next) {
   try {
     const client = createMainBackendClient(req.userJwt);
-    const response = await client.get('/api/auth/me');
+    const response = await client.get('/auth/me');
     const role = response.data?.data?.user?.role;
 
     if (role !== 'superadmin') {
