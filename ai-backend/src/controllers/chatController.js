@@ -1,5 +1,6 @@
 import { Conversation } from '../models/Conversation.js';
 import { Message } from '../models/Message.js';
+import { TenantUsage } from '../models/TenantUsage.js';
 import { buildContext } from '../memory/contextBuilder.js';
 import { maybeSummarize } from '../memory/summaryService.js';
 import { runGeminiTurn } from '../providers/geminiProvider.js';
@@ -7,6 +8,40 @@ import { createMainBackendClient } from '../utils/mainBackendClient.js';
 import { getActiveSystemPrompt } from '../registry/promptRegistry.js';
 import { AppError } from '../utils/AppError.js';
 import { logger } from '../utils/logger.js';
+
+async function recordTenantUsage({ tenantId, userId, usage }) {
+  try {
+    const now = new Date();
+    const totalTokens = usage?.totalTokenCount || 0;
+    const promptTokens = usage?.promptTokenCount || 0;
+    const completionTokens = usage?.candidatesTokenCount || 0;
+
+    const targets = Array.from(new Set([tenantId, userId].filter(Boolean)));
+
+    for (const id of targets) {
+      await TenantUsage.updateOne(
+        { tenantId: id },
+        {
+          $inc: {
+            totalTokens,
+            promptTokens,
+            completionTokens,
+            totalRequests: 1,
+          },
+          $push: {
+            recentRequests: {
+              $each: [{ timestamp: now }],
+              $slice: -2000,
+            },
+          },
+        },
+        { upsert: true }
+      );
+    }
+  } catch (err) {
+    logger.error({ err }, 'Failed to update TenantUsage counter');
+  }
+}
 
 /**
  * POST /api/ai/chat
@@ -50,6 +85,8 @@ export async function sendMessage(req, res, next) {
         totalTokens: usage.totalTokenCount,
       },
     });
+
+    void recordTenantUsage({ tenantId, userId, usage });
 
     conversation.lastActivityAt = new Date();
     await conversation.save();
