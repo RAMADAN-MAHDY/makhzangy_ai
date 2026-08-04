@@ -3,6 +3,7 @@ import { getSalesSummary } from './getSalesSummary.js';
 import { getLowStock } from './getLowStock.js';
 import { searchItems } from './searchItems.js';
 import { getClientBalance } from './getClientBalance.js';
+import { getBusinessOverview } from './getBusinessOverview.js';
 
 /**
  * First 5 Tools (Sprint 4 — Capability Map v1: Dashboard / Sales / Inventory / Clients).
@@ -16,4 +17,5 @@ export const allTools = [
   getLowStock,
   searchItems,
   getClientBalance,
+  getBusinessOverview,
 ];
