@@ -2,10 +2,39 @@ import { GoogleGenAI } from '@google/genai';
 import { env } from '../config/env.js';
 import { getFunctionDeclarations, executeTool } from '../registry/toolRegistry.js';
 import { logger } from '../utils/logger.js';
+import { AppError } from '../utils/AppError.js';
 
 const client = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 
 const MAX_TOOL_HOPS = 4; // hard cap so a confused model can't loop forever
+
+function normalizeGeminiError(err) {
+  if (err instanceof AppError) return err;
+
+  const rawMessage = typeof err?.message === 'string' ? err.message : JSON.stringify(err || {});
+  const status = err?.status || err?.statusCode || err?.code || err?.error?.code || err?.response?.status;
+  const statusText = err?.statusText || err?.error?.status || err?.response?.statusText || '';
+
+  const isUnavailable =
+    status === 503 ||
+    rawMessage.includes('"code":503') ||
+    rawMessage.includes('UNAVAILABLE') ||
+    statusText === 'UNAVAILABLE';
+
+  if (isUnavailable) {
+    return new AppError(
+      'مساعد الذكاء الاصطناعي عليه ضغط عالي حاليا. جرب تاني بعد دقيقة.',
+      503,
+      'AI_PROVIDER_UNAVAILABLE'
+    );
+  }
+
+  return new AppError(
+    'حصل خطأ داخلي في خدمة الذكاء الاصطناعي. جرّب مرة تانية بعد شويه.',
+    500,
+    'AI_INTERNAL_ERROR'
+  );
+}
 
 function mergeUsage(base, next) {
   if (!next) return base;
@@ -35,14 +64,19 @@ export async function runGeminiTurn({ systemPrompt, history, userMessage, toolCt
   let usage = { promptTokenCount: 0, candidatesTokenCount: 0, totalTokenCount: 0 };
 
   for (let hop = 0; hop < MAX_TOOL_HOPS; hop++) {
-    const response = await client.models.generateContent({
-      model: env.GEMINI_MODEL,
-      contents,
-      config: {
-        systemInstruction: systemPrompt,
-        tools: [{ functionDeclarations: getFunctionDeclarations() }],
-      },
-    });
+    let response;
+    try {
+      response = await client.models.generateContent({
+        model: env.GEMINI_MODEL,
+        contents,
+        config: {
+          systemInstruction: systemPrompt,
+          tools: [{ functionDeclarations: getFunctionDeclarations() }],
+        },
+      });
+    } catch (err) {
+      throw normalizeGeminiError(err);
+    }
 
     usage = mergeUsage(usage, response.usageMetadata);
 

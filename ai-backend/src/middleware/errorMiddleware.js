@@ -19,7 +19,7 @@ export function errorMiddleware(err, req, res, _next) {
     success: false,
     error: {
       code,
-      message: err.message || 'حصل خطأ غير متوقع',
+      message: err.message || 'حصل خطأ غير متوقع. رجاءً حاول مرة أخرى.',
       ...(env.NODE_ENV === 'development' ? { stack: err.stack } : {}),
     },
   });
