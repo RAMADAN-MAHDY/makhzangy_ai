@@ -7,8 +7,8 @@ export async function superadminMiddleware(req, res, next) {
     const response = await client.get('/auth/me');
     const role = response.data?.data?.user?.role;
 
-    if (role !== 'superadmin') {
-      return next(new AppError('هذة المسار متاح فقط لسوبر أدمن', 403, 'FORBIDDEN'));
+    if (role !== 'superadmin' && role !== 'owner') {
+      return next(new AppError('هذا المسار متاح فقط لسوبر أدمن أو المالك (Owner)', 403, 'FORBIDDEN'));
     }
 
     req.userRole = role;
