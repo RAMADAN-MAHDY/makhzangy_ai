@@ -44,7 +44,6 @@ Content-Type: application/json
 Authorization: Bearer {{login.response.body.data.token}}
 
 {
-    "conversationId": "{{chat1.response.body.data.conversationId}}",
    "message":" ما هو ده اللي انا قصدي عليه "
 }
 

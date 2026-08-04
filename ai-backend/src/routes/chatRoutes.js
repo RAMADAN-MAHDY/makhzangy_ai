@@ -4,7 +4,7 @@ import { validate } from '../middleware/validateMiddleware.js';
 import { chatMessageSchema } from '../constants/schemas.js';
 import { sendMessage } from '../controllers/chatController.js';
 import { listConversations, getConversationMessages } from '../controllers/conversationController.js';
-import { getUsageSummary } from '../controllers/usageController.js';
+import { getUsageSummary, getUserUsageDetails } from '../controllers/usageController.js';
 import { superadminMiddleware } from '../middleware/superadminMiddleware.js';
 
 const router = Router();
@@ -20,5 +20,6 @@ router.get('/conversations/:id/messages', getConversationMessages);
 
 // Usage summary (superadmin only)
 router.get('/usage', superadminMiddleware, getUsageSummary);
+router.get('/admin/usage/:tenantId', superadminMiddleware, getUserUsageDetails);
 
 export default router;
