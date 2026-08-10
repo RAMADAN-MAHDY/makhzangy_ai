@@ -9,7 +9,9 @@ import pinoHttp from 'pino-http';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
 import chatRoutes from './routes/chatRoutes.js';
+import voiceRoutes from './routes/voiceRoutes.js';
 import { notFoundHandler, errorMiddleware } from './middleware/errorMiddleware.js';
+import { validateVoiceConfig } from './config/voiceConfig.js';
 
 export const app = express();
 
@@ -41,6 +43,14 @@ app.get('/', (_req, res) => res.json({ success: true, service: 'makhzangy-ai-bac
 app.get('/api/health', (_req, res) => res.json({ success: true, service: 'makhzangy-ai-backend', status: 'ok' }));
 
 app.use('/api/ai', chatLimiter, chatRoutes);
+app.use('/api/voice', voiceRoutes);
+
+// Validate voice config at startup (non-fatal when disabled)
+try {
+  validateVoiceConfig();
+} catch (err) {
+  logger.error({ err }, '❌ Voice configuration error — voice features will be unavailable');
+}
 
 app.use(notFoundHandler);
 app.use(errorMiddleware);

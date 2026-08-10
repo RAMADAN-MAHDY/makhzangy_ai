@@ -1,5 +1,8 @@
 # مشروع مخزنجي — AI Agent Package
 
+<!--  امر التثبيت علي الجهاز بسبب كسر ال npm and node  -->
+node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" install multer
+
 هذا المجلد يحتوي على:
 
 - **`ai-backend/`** — الكود الفعلي لـ AI Backend (Node.js + Gemini + Function Calling) جاهز للتشغيل، منفذ حسب التخطيط الأصلي. فيه أول 5 Tools شغالة (Dashboard, Sales, Low Stock, Search Items, Client Balance)، وMemory (Conversation + Messages)، وError Handling موحد، وLogging.
