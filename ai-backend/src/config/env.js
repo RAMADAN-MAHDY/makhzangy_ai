@@ -14,7 +14,7 @@ const envSchema = z.object({
   MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
 
   GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
-  GEMINI_MODEL: z.string().default('gemini-3.5-flash-lite'),
+  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
 
   MAIN_BACKEND_BASE_URL: z.string().url(),
 
@@ -44,7 +44,7 @@ const envSchema = z.object({
   TTS_ENABLED: boolFromString,
   TTS_API_KEY: z.string().optional(),
   TTS_PROVIDER: z.string().default('gemini'),
-  TTS_MODEL: z.string().default('gemini-2.5-flash-preview-tts'),
+  TTS_MODEL: z.string().default('gemini-1.5-flash'),
   TTS_VOICE: z.string().default('Aoede'),
 
   // Provider-level rate limits

@@ -123,9 +123,9 @@ export async function transcribe({ audioBuffer, mimeType }) {
   if (!text) {
     logger.warn({ model }, 'voice.stt.empty_transcript');
     throw new AppError(
-      'تعذّر تحويل الصوت إلى نص. حاول مرة أخرى.',
-      500,
-      VOICE_ERROR_CODES.STT_FAILED
+      'لم يتم التعرّف على صوت واضح. يرجى التحدث بصوت أعلى وإعادة المحاولة.',
+      400,
+      VOICE_ERROR_CODES.INVALID_AUDIO
     );
   }
 
