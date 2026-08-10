@@ -121,8 +121,45 @@ export async function synthesize({ text }) {
     );
   }
 
-  const audioBuffer = Buffer.from(audioPart.inlineData.data, 'base64');
-  const mimeType = audioPart.inlineData.mimeType;
+  const rawMime = audioPart.inlineData.mimeType || 'audio/wav';
+  let audioBuffer = Buffer.from(audioPart.inlineData.data, 'base64');
+  let mimeType = rawMime;
+
+  if (rawMime.includes('pcm')) {
+    const rateMatch = rawMime.match(/rate=(\d+)/);
+    const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
+    audioBuffer = pcmToWav(audioBuffer, sampleRate);
+    mimeType = 'audio/wav';
+  }
 
   return { audioBuffer, mimeType };
+}
+
+/**
+ * Convert raw PCM audio buffer to a standard WAV audio buffer
+ * so HTML5 Audio elements in browsers can play it natively.
+ */
+function pcmToWav(pcmBuffer, sampleRate = 24000, numChannels = 1, bitsPerSample = 16) {
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const dataSize = pcmBuffer.length;
+  const chunkSize = 36 + dataSize;
+
+  const header = Buffer.alloc(44);
+
+  header.write('RIFF', 0);
+  header.writeUInt32LE(chunkSize, 4);
+  header.write('WAVE', 8);
+  header.write('fmt ', 12);
+  header.writeUInt32LE(16, 16); // Subchunk1Size (16 for PCM)
+  header.writeUInt16LE(1, 20); // AudioFormat (1 for PCM)
+  header.writeUInt16LE(numChannels, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitsPerSample, 34);
+  header.write('data', 36);
+  header.writeUInt32LE(dataSize, 40);
+
+  return Buffer.concat([header, pcmBuffer]);
 }
